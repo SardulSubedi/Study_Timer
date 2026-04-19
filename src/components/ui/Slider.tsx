@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import { InfoTooltip } from './InfoTooltip';
+
 interface SliderProps {
   value: number;
   onChange: (v: number) => void;
@@ -7,6 +10,7 @@ interface SliderProps {
   label?: string;
   valueLabel?: string;
   id?: string;
+  info?: { title?: string; body: ReactNode; width?: number; align?: 'start' | 'end' };
 }
 
 export function Slider({
@@ -18,15 +22,27 @@ export function Slider({
   label,
   valueLabel,
   id,
+  info,
 }: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div>
       {label && (
-        <div className="flex items-baseline justify-between mb-2">
-          <label htmlFor={id} className="label !mb-0">
-            {label}
-          </label>
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <div className="flex items-center gap-1.5">
+            <label htmlFor={id} className="label !mb-0">
+              {label}
+            </label>
+            {info && (
+              <InfoTooltip
+                title={info.title}
+                width={info.width}
+                side={info.align === 'end' ? 'right' : 'left'}
+              >
+                {info.body}
+              </InfoTooltip>
+            )}
+          </div>
           <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
             {valueLabel ?? value}
           </span>

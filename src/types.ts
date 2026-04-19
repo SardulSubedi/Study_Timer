@@ -25,7 +25,11 @@ export interface EvenSettings {
   minLen: number;
   /** Maximum section length in ms. */
   maxLen: number;
-  /** Fraction of total pages held back as hidden buffer (0-1). */
+  /**
+   * Fraction of your page goal withheld from per-section targets (0–1).
+   * At 0, every page you entered is assigned across sections.
+   * Above 0, that share is left unassigned so visible targets sum to less than your total.
+   */
   bufferPct: number;
   /** Strength of front-loading (0 = flat, 0.3 = last section ~70% of first). */
   frontLoad: number;
@@ -86,7 +90,7 @@ export interface AppPrefs {
 export const DEFAULT_EVEN: EvenSettings = {
   minLen: 15 * 60_000,
   maxLen: 45 * 60_000,
-  bufferPct: 0.1,
+  bufferPct: 0,
   frontLoad: 0.2,
 };
 
@@ -96,7 +100,7 @@ export const DEFAULT_POMODORO: PomodoroSettings = {
   longBreakMs: 20 * 60_000,
   sessionsBeforeLong: 4,
   frontLoad: 0.2,
-  bufferPct: 0.1,
+  bufferPct: 0,
 };
 
 export const DEFAULT_ADAPTIVE: AdaptiveSettings = {
@@ -109,5 +113,5 @@ export const DEFAULT_ADAPTIVE: AdaptiveSettings = {
 export const DEFAULT_PREFS: AppPrefs = {
   chime: false,
   notifications: false,
-  theme: 'dark',
+  theme: 'light',
 };

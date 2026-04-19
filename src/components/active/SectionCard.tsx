@@ -3,10 +3,16 @@ import { formatClock, msToMinutes } from '@/lib/time';
 
 interface Props {
   section: Section;
-  paceCumulative?: number;
+  /**
+   * Pages reported so far. Only show when there is real data:
+   *  - "done" sections: the value recorded at close
+   *  - "current" section: the latest logged total (or undefined if nothing logged)
+   *  - "upcoming" sections: always undefined
+   */
+  actualCumulative?: number;
 }
 
-export function SectionCard({ section, paceCumulative }: Props) {
+export function SectionCard({ section, actualCumulative }: Props) {
   const isCurrent = section.status === 'current';
   const isDone = section.status === 'done';
   const isBreak = section.type !== 'work';
@@ -18,7 +24,8 @@ export function SectionCard({ section, paceCumulative }: Props) {
     stateClass =
       'bg-indigo-500/10 border-indigo-500/50 ring-2 ring-indigo-500/30';
   } else if (isDone) {
-    stateClass = 'bg-slate-100/50 dark:bg-white/[0.02] border-border dark:border-border-dark opacity-70';
+    stateClass =
+      'bg-slate-100/50 dark:bg-white/[0.02] border-border dark:border-border-dark opacity-70';
   } else {
     stateClass =
       'bg-surface dark:bg-white/[0.02] border-border dark:border-border-dark';
@@ -29,22 +36,29 @@ export function SectionCard({ section, paceCumulative }: Props) {
 
   const icon = isDone ? '✓' : isCurrent ? '▶' : isBreak ? '☕' : '';
 
-  // Delta vs target to color-code pace
-  let paceColor = '';
-  let paceValue: number | undefined = paceCumulative;
-  if (isDone && section.actualPagesCumulative !== undefined) {
-    paceValue = section.actualPagesCumulative;
-    const delta = section.actualPagesCumulative - section.targetPagesCumulative;
-    const ratio = section.targetPagesCumulative === 0 ? 0 : delta / Math.max(1, section.targetPagesCumulative);
-    if (Math.abs(ratio) < 0.05) paceColor = 'text-amber-500 dark:text-amber-400';
-    else if (ratio >= 0) paceColor = 'text-emerald-500 dark:text-emerald-400';
-    else paceColor = 'text-rose-500 dark:text-rose-400';
-  } else if (paceCumulative !== undefined) {
-    const delta = paceCumulative - section.targetPagesCumulative;
-    if (Math.abs(delta) < Math.max(1, section.targetPagesCumulative * 0.05))
-      paceColor = 'text-amber-500 dark:text-amber-400';
-    else if (delta >= 0) paceColor = 'text-emerald-500 dark:text-emerald-400';
-    else paceColor = 'text-rose-500 dark:text-rose-400';
+  // Color for the actual-pages number, only meaningful for done/current and
+  // when we have a value. For "current", compare against the previous
+  // section's cumulative target (i.e. the floor expected at section start)
+  // and the section's own end target. Sitting between them = on pace.
+  let paceColor = 'text-slate-500 dark:text-slate-400';
+  let delta: number | undefined;
+  if (actualCumulative !== undefined) {
+    if (isDone) {
+      delta = actualCumulative - section.targetPagesCumulative;
+    } else if (isCurrent) {
+      // For current: just compare to end-of-section target (we're working towards it).
+      delta = actualCumulative - section.targetPagesCumulative;
+    }
+    if (delta !== undefined) {
+      const tolerance = Math.max(1, section.targetPagesCumulative * 0.05);
+      if (Math.abs(delta) <= tolerance) {
+        paceColor = 'text-amber-500 dark:text-amber-400';
+      } else if (delta > 0) {
+        paceColor = 'text-emerald-500 dark:text-emerald-400';
+      } else {
+        paceColor = 'text-rose-500 dark:text-rose-400';
+      }
+    }
   }
 
   return (
@@ -59,7 +73,7 @@ export function SectionCard({ section, paceCumulative }: Props) {
             title={
               section.adjustmentReason
                 ? `${section.adjustmentReason} (${msToMinutes(section.adjustedFromMs)}→${msToMinutes(section.endMs - section.startMs)} min)`
-                : `Section length adjusted`
+                : 'Section length adjusted'
             }
           >
             ↕
@@ -74,10 +88,12 @@ export function SectionCard({ section, paceCumulative }: Props) {
           {section.type === 'long-break' ? 'Long break' : 'Short break'}
         </div>
       ) : (
-        <div className="mt-2 flex items-baseline gap-2">
+        <div className="mt-2 flex items-baseline gap-2 min-h-[1.25rem]">
           <span className="num-target text-sm">{section.targetPagesCumulative}</span>
-          {paceValue !== undefined && (
-            <span className={`num-pace text-sm ${paceColor}`}>{paceValue}</span>
+          {actualCumulative !== undefined && (
+            <span className={`num-pace text-sm ${paceColor}`}>
+              {actualCumulative}
+            </span>
           )}
         </div>
       )}

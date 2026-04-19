@@ -7,7 +7,7 @@ An unstoppable, wall-clock-accurate study timer. Tell it what time you need to b
 ## Features
 
 - **Three scheduling modes**
-  - **Even Breakdown** — section length = `clamp(4% of total time, 15 min, 45 min)`, front-loaded page targets, hidden buffer.
+  - **Even Breakdown** — section length = `clamp(4% of total time, 15 min, 45 min)`, front-loaded page targets, optional hidden buffer (default **0%**, so your full page goal is split across sections).
   - **Pomodoro** — configurable work / short break / long break, long break every _N_ sessions. Pages distributed across work blocks only.
   - **Adaptive Flow** — rebalances remaining sections after each report using a smoothed pace (0.7 × previous + 0.3 × latest). Detects **flow** (3 strong sections in a row → longer blocks, popups suppressed) and **recovery** (2+ weak sections → shorter blocks, lowered targets).
 - **Dual-fill progress bar** — the section's progress bar shows both time elapsed (solid indigo fill) and your current page position (thin tick, colored emerald/amber/rose). The gap between them is shaded so "are you ahead or behind?" is answerable without reading a single number.
@@ -17,7 +17,7 @@ An unstoppable, wall-clock-accurate study timer. Tell it what time you need to b
 - **Plan preview before you start** — every scheduling decision is rendered as a proportional timeline on the setup screen, so you know exactly what you're signing up for.
 - **Keyboard-first logging** — <kbd>+</kbd>/<kbd>-</kbd> adjust by 1, <kbd>Shift</kbd>+<kbd>+</kbd>/<kbd>-</kbd> by 5, <kbd>L</kbd> opens the log dialog.
 - **Resume on refresh** — sessions persist to `localStorage` and prompt you to resume or reset on reload.
-- **Polish** — dark mode, Screen Wake Lock, system notifications when tab is hidden, `prefers-reduced-motion`, responsive, `aria-live` countdown, tab title updates live, optional chime on section change.
+- **Polish** — light mode by default (toggle to dark), Screen Wake Lock, system notifications when tab is hidden, `prefers-reduced-motion`, responsive, `aria-live` countdown, tab title updates live, optional chime on section change.
 
 ## Getting started
 

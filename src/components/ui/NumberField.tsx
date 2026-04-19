@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { InfoTooltip } from './InfoTooltip';
 
 interface NumberFieldProps {
   value: number;
@@ -10,6 +11,7 @@ interface NumberFieldProps {
   label?: string;
   id?: string;
   className?: string;
+  info?: { title?: string; body: ReactNode; width?: number };
 }
 
 export function NumberField({
@@ -22,6 +24,7 @@ export function NumberField({
   label,
   id,
   className = '',
+  info,
 }: NumberFieldProps) {
   const [local, setLocal] = useState<string>(String(value));
 
@@ -45,9 +48,16 @@ export function NumberField({
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={id} className="label">
-          {label}
-        </label>
+        <div className="flex items-center gap-1.5 mb-2">
+          <label htmlFor={id} className="label !mb-0">
+            {label}
+          </label>
+          {info && (
+            <InfoTooltip title={info.title} width={info.width}>
+              {info.body}
+            </InfoTooltip>
+          )}
+        </div>
       )}
       <div className="relative flex items-stretch">
         <button

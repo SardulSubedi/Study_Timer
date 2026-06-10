@@ -222,14 +222,10 @@ export function ActiveScreen({ now }: Props) {
 }
 
 function ThemeToggle() {
-  const [dark, setDark] = useState<boolean>(() =>
-    document.documentElement.classList.contains('dark'),
-  );
+  const theme = useSession((s) => s.prefs.theme);
+  const setPrefs = useSession((s) => s.setPrefs);
   const toggle = () => {
-    const next = !dark;
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('studytimer:theme', next ? 'dark' : 'light');
-    setDark(next);
+    setPrefs({ theme: theme === 'dark' ? 'light' : 'dark' });
   };
   return (
     <button
@@ -239,7 +235,7 @@ function ThemeToggle() {
       aria-label="Toggle theme"
       title="Toggle theme"
     >
-      {dark ? '☾' : '☀'}
+      {theme === 'dark' ? '☾' : '☀'}
     </button>
   );
 }

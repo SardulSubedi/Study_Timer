@@ -16,6 +16,8 @@ import {
 } from '@/types';
 import { planForMode, rebalance } from '@/lib/schedule';
 
+const LEGACY_THEME_KEY = 'studytimer:theme';
+
 type UIMode = 'setup' | 'active' | 'complete';
 
 interface SessionState {
@@ -242,7 +244,39 @@ export const useSession = create<SessionState>()(
         const updated = applyStatuses(session.sections, nowMs);
         const changed = updated.some((s, i) => s.status !== session.sections[i].status);
         if (!changed) return;
-        set({ session: { ...session, sections: updated } });
+
+        const newlyClosedIndices = updated
+          .map((s, i) =>
+            s.status === 'done' && session.sections[i].status !== 'done' ? i : -1,
+          )
+          .filter((i) => i >= 0);
+
+        let nextSession: Session = { ...session, sections: updated };
+
+        if (session.mode === 'adaptive') {
+          for (const closedIdx of newlyClosedIndices) {
+            const closed = nextSession.sections[closedIdx];
+            const rebalancedFromLog =
+              closed?.reportedAt !== undefined && closed.reportedAt >= closed.endMs;
+            if (
+              closed?.type === 'work' &&
+              nowMs >= closed.endMs &&
+              !rebalancedFromLog
+            ) {
+              const result = rebalance(nextSession, closedIdx, nowMs);
+              if (result) {
+                nextSession = {
+                  ...nextSession,
+                  sections: result.sections,
+                  smoothedPace: result.smoothedPace,
+                  flowState: result.flowState,
+                };
+              }
+            }
+          }
+        }
+
+        set({ session: nextSession });
       },
 
       markPopupShown: (sectionIndex) => {
@@ -294,6 +328,13 @@ export const useSession = create<SessionState>()(
         draft: s.draft,
       }),
       onRehydrateStorage: () => (state) => {
+        if (state) {
+          // One-time migration from legacy studytimer:theme key
+          const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+          if (legacy === 'dark' && state.prefs.theme === 'light') {
+            state.prefs = { ...state.prefs, theme: 'dark' };
+          }
+        }
         // On load: if we have a session, gate it behind the resume dialog.
         if (state?.session && !state.session.completedAt) {
           state.pendingResume = state.session;

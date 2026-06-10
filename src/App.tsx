@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useWallClock } from '@/hooks/useWallClock';
+import { applyThemeToDocument, clearLegacyThemeKey } from '@/lib/theme';
 import { useSession } from '@/store/useSession';
 import { SetupScreen } from '@/components/setup/SetupScreen';
 import { ActiveScreen } from '@/components/active/ActiveScreen';
@@ -11,6 +12,11 @@ export default function App() {
   const ui = useSession((s) => s.ui);
   const pendingResume = useSession((s) => s.pendingResume);
   const prefs = useSession((s) => s.prefs);
+
+  useEffect(() => {
+    applyThemeToDocument(prefs.theme);
+    clearLegacyThemeKey();
+  }, [prefs.theme]);
 
   // Request notification permission once, lazily, if the user enables them.
   useEffect(() => {
